@@ -50,12 +50,16 @@ const updateContactById = async (contactId, updateParams) => {
 };
 
 const deleteContactById = async (contactId) => {
-  const contacts = await listContacts();
+  try {
+    const contacts = await listContacts();
 
-  const contactIdx = findContactIdx(contacts, contactId);
-  const modifiedContacts = contacts.splice(contactIdx, 1);
+    const contactIdx = findContactIdx(contacts, contactId);
+    const modifiedContacts = contacts.splice(contactIdx, 1);
 
-  return modifyContactsDb(modifiedContacts);
+    return modifyContactsDb(modifiedContacts);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 module.exports = {
