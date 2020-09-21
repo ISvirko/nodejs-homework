@@ -9,7 +9,7 @@ exports.getContacts = async (req, res, next) => {
 
     res.status(200).send(contacts);
   } catch (error) {
-    next({ message: error });
+    next(error);
   }
 };
 
@@ -17,21 +17,23 @@ exports.getContactById = async (req, res, next) => {
   try {
     const contact = await getContactByIdFromParams(req.params, res);
 
-    contact && res.status(200).send(contact);
+    if (contact) {
+      res.status(200).send(contact);
+    }
   } catch (error) {
-    next({ message: error });
+    next(error);
   }
 };
 
 exports.createContact = async (req, res, next) => {
   try {
-    const newContact = await contactsModel.addContact(req.body);
+    const newContact = await contactsModel.addContact(req.body, res);
 
-    newContact
-      ? res.status(201).send(newContact)
-      : res.status(409).send({ message: "Contact already exists" });
+    if (newContact) {
+      res.status(201).send(newContact);
+    }
   } catch (error) {
-    next({ message: error });
+    next(error);
   }
 };
 
@@ -46,7 +48,7 @@ exports.updateContact = async (req, res, next) => {
 
     res.status(200).send(updatedContact);
   } catch (error) {
-    next({ message: error });
+    next(error);
   }
 };
 
@@ -56,8 +58,8 @@ exports.deleteContact = async (req, res, next) => {
 
     await contactsModel.deleteContactById(contact.id);
 
-    res.status(204).send();
+    res.sendStatus(204);
   } catch (error) {
-    next({ message: error });
+    next(error);
   }
 };

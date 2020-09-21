@@ -7,7 +7,11 @@ exports.getContactByIdFromParams = async ({ contactId }, res) => {
       (contact) => contact.id.toString() === contactId
     );
 
-    return contact ? contact : res.status(404).send("Contact not found");
+    if (contact) {
+      return contact;
+    } else {
+      return res.status(404).send("Contact not found");
+    }
   } catch (error) {
     console.log(error);
   }

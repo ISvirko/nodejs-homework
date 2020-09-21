@@ -20,12 +20,12 @@ const findContactById = async (contactId) => {
   }
 };
 
-const addContact = async (contactParams) => {
+const addContact = async (contactParams, res) => {
   try {
     const contacts = await listContacts();
 
     if (contacts.find((contact) => contact.email === contactParams.email))
-      return;
+      return res.status(409).send({ message: "Contact already exists" });
 
     const id = uuid.v4();
     const contactToCreate = { ...contactParams, id };
