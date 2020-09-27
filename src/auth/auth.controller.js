@@ -41,7 +41,7 @@ exports.login = async (req, res, next) => {
 
     const user = await NewUserModel.findOne({ email });
     if (!user) {
-      return res.status(404).send("User not found");
+      return res.status(401).send("User not found");
     }
 
     const isPasswordCorrect = await bcyptjs.compare(password, user.password);
@@ -53,7 +53,12 @@ exports.login = async (req, res, next) => {
       expiresIn: process.env.JWT_EXPIRES_IN,
     });
 
-    res.cookie("token", token, { httpOnly: true });
+    res.cookie("token", token, {
+      httpOnly: true,
+      maxAge: 3600 * 24,
+      secure: true,
+      sameSite: "strict",
+    });
 
     await NewUserModel.findByIdAndUpdate(user._id, { token });
 
