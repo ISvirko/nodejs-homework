@@ -1,12 +1,12 @@
 const { Router } = require("express");
 const { authorize } = require("../auth/auth.controller");
+const { multer } = require("../helpers/multer");
 const {
   getCurrentUser,
   updateSubscription,
   checkSubscriptionOption,
-  addAvatar,
   minifyImage,
-  upload,
+  updateAvatar,
 } = require("./user.controller");
 
 // ROUTER
@@ -16,6 +16,6 @@ router.get("/current", authorize, getCurrentUser);
 
 router.patch("/", authorize, checkSubscriptionOption, updateSubscription);
 
-router.patch("/avatars", upload, minifyImage, addAvatar);
+router.patch("/avatars", authorize, multer, minifyImage, updateAvatar);
 
 exports.userRouter = router;

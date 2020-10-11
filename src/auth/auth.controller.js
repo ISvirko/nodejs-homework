@@ -4,11 +4,14 @@ const jwt = require("jsonwebtoken");
 const Avatar = require("avatar-builder");
 const fs = require("fs");
 
+const PORT = process.env.PORT || 3000;
+
 // REGISTER
 
 exports.register = async (req, res, next) => {
   try {
     const { email, subscription, password } = req.body;
+    const { filename } = req.file;
 
     const existingUser = await NewUserModel.findOne({ email });
     if (existingUser) {
@@ -20,24 +23,37 @@ exports.register = async (req, res, next) => {
       Number(process.env.BCRYPT_SALT_ROUNDS)
     );
 
-    const catAvatar = Avatar.catBuilder(256);
-    const avatarName = Date.now();
-
-    const avatar = await catAvatar
-      .create(avatarName)
-      .then((buffer) => fs.writeFileSync(`tmp/${avatarName}`, buffer));
-
-    await NewUserModel.create({
+    const newUser = await NewUserModel.create({
       email,
       subscription,
       password: passwordHash,
-      avatarURL: avatar,
+      avatarURL: `http://locahost:${PORT}/images/${filename}`,
     });
 
     res.status(201).send({
       email,
       subscription,
+      avatarURL: newUser.avatarURL,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GENERATE AVATAR
+
+exports.generateAvatar = async (req, res, next) => {
+  try {
+    const catAvatar = Avatar.catBuilder(256);
+    const filename = String(Date.now()) + ".png";
+    const destination = "tmp";
+
+    const avatar = await catAvatar.create(filename);
+
+    await fs.writeFileSync(`${destination}/${filename}`, avatar);
+
+    req.file = { destination, filename };
+    next();
   } catch (error) {
     next(error);
   }
@@ -66,7 +82,6 @@ exports.login = async (req, res, next) => {
     res.cookie("token", token, {
       httpOnly: true,
       maxAge: 3600 * 24,
-      secure: true,
       sameSite: "strict",
     });
 

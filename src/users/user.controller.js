@@ -1,6 +1,6 @@
 const CurrentUserModel = require("./user.model");
 const path = require("path");
-const multer = require("multer");
+const { promises: fsPromises } = require("fs");
 const imagemin = require("imagemin");
 const imageminJpegtran = require("imagemin-jpegtran");
 const imageminPngquant = require("imagemin-pngquant");
@@ -39,18 +39,16 @@ exports.checkSubscriptionOption = async (req, res, next) => {
   next();
 };
 
-const storage = multer.diskStorage({
-  destination: "./tmp",
-  filename: (req, file, cb) => {
-    const { ext } = path.parse(file.originalname);
-    return cb(null, Date.now() + ext);
-  },
-});
+exports.updateAvatar = async (req, res, next) => {
+  try {
+    const { _id, avatarURL } = req.user;
 
-exports.upload = multer({ storage }).single("avatarURL");
+    await CurrentUserModel.findByIdAndUpdate(_id, { avatarURL });
 
-exports.addAvatar = (req, res, next) => {
-  return res.status(200).send(req.file);
+    return res.status(200).send({ avatarURL });
+  } catch (error) {
+    next(error);
+  }
 };
 
 exports.minifyImage = async (req, res, next) => {
@@ -75,6 +73,8 @@ exports.minifyImage = async (req, res, next) => {
       path: path.join(MINIFIED_IMG_DIR, filename),
       destination: MINIFIED_IMG_DIR,
     };
+
+    await fsPromises.unlink(`${destination}/${filename}`);
 
     next();
   } catch (error) {
