@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 exports.generateAvatar = async (req, res, next) => {
   try {
     const catAvatar = Avatar.catBuilder(256);
-    const filename = String(Date.now()) + ".png";
+    const filename = Date.now() + ".png";
     const destination = "tmp";
 
     const avatar = await catAvatar.create(filename);
