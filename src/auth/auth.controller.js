@@ -14,27 +14,30 @@ exports.register = async (req, res, next) => {
     const { filename } = req.file;
 
     const existingUser = await NewUserModel.findOne({ email });
+
     if (existingUser) {
       return res.status(409).send("Email in use");
+    } else {
+      const passwordHash = await bcyptjs.hash(
+        password,
+        Number(process.env.BCRYPT_SALT_ROUNDS)
+      );
+
+      const newUser = await NewUserModel.create({
+        email,
+        subscription,
+        password: passwordHash,
+        avatarURL: `http://locahost:${PORT}/images/${filename}`,
+      });
+
+      if (newUser) {
+        res.status(201).send({
+          email: newUser.email,
+          subscription: newUser.subscription,
+          avatarURL: newUser.avatarURL,
+        });
+      }
     }
-
-    const passwordHash = await bcyptjs.hash(
-      password,
-      Number(process.env.BCRYPT_SALT_ROUNDS)
-    );
-
-    const newUser = await NewUserModel.create({
-      email,
-      subscription,
-      password: passwordHash,
-      avatarURL: `http://locahost:${PORT}/images/${filename}`,
-    });
-
-    res.status(201).send({
-      email,
-      subscription,
-      avatarURL: newUser.avatarURL,
-    });
   } catch (error) {
     next(error);
   }
