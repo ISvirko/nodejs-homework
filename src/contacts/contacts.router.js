@@ -6,6 +6,7 @@ const {
   createContactScheme,
   updateContactScheme,
 } = require("../helpers/validSchemes");
+const { handlerException } = require("../helpers/handlerException");
 
 const {
   getContacts,
@@ -15,14 +16,22 @@ const {
   deleteContact,
 } = require("./contacts.controller");
 
-router.get("/", getContacts);
+router.get("/", handlerException(getContacts));
 
-router.get("/:contactId", getContactById);
+router.get("/:contactId", handlerException(getContactById));
 
-router.post("/", validator(createContactScheme), createContact);
+router.post(
+  "/",
+  validator(createContactScheme),
+  handlerException(createContact)
+);
 
-router.patch("/:contactId", validator(updateContactScheme), updateContact);
+router.patch(
+  "/:contactId",
+  validator(updateContactScheme),
+  handlerException(updateContact)
+);
 
-router.delete("/:contactId", deleteContact);
+router.delete("/:contactId", handlerException(deleteContact));
 
 exports.contactsRouter = router;
