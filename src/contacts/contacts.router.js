@@ -2,10 +2,8 @@ const { Router } = require("express");
 const router = Router();
 
 const { validator } = require("../helpers/validator");
-const {
-  createContactScheme,
-  updateContactScheme,
-} = require("../helpers/validSchemes");
+const Joi = require("joi");
+
 const { handlerException } = require("../helpers/handlerException");
 
 const {
@@ -15,6 +13,18 @@ const {
   updateContact,
   deleteContact,
 } = require("./contacts.controller");
+
+const createContactScheme = Joi.object({
+  name: Joi.string().required(),
+  email: Joi.string().email().required(),
+  phone: Joi.string().required(),
+});
+
+const updateContactScheme = Joi.object({
+  name: Joi.string(),
+  email: Joi.string().email(),
+  phone: Joi.string(),
+}).min(1);
 
 router.get("/", handlerException(getContacts));
 

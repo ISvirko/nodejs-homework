@@ -1,6 +1,3 @@
-const {
-  getContactByIdFromParams,
-} = require("../helpers/getContactByIdFromParams");
 const contactsModel = require("./contacts.model");
 
 exports.getContacts = async (req, res, next) => {
@@ -9,9 +6,12 @@ exports.getContacts = async (req, res, next) => {
 };
 
 exports.getContactById = async (req, res, next) => {
-  const contact = await getContactByIdFromParams(req.params, res);
+  const contact = await contactsModel.getContactByIdFromParams(req.params, res);
+
   if (contact) {
     res.json(contact);
+  } else {
+    res.status(404).send({ message: "Contact not found" });
   }
 };
 
@@ -24,18 +24,22 @@ exports.createContact = async (req, res, next) => {
 };
 
 exports.updateContact = async (req, res, next) => {
-  const contact = await getContactByIdFromParams(req.params, res);
+  const contact = await contactsModel.getContactByIdFromParams(req.params, res);
 
   const updatedContact = await contactsModel.updateContactById(
     contact.id,
     req.body
   );
 
-  res.json(updatedContact);
+  if (updatedContact) {
+    res.json(updatedContact);
+  } else {
+    res.status(404).send({ message: "Contact not found" });
+  }
 };
 
 exports.deleteContact = async (req, res, next) => {
-  const contact = await getContactByIdFromParams(req.params, res);
+  const contact = await contactsModel.getContactByIdFromParams(req.params, res);
 
   await contactsModel.deleteContactById(contact.id);
 
