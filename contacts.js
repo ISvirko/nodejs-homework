@@ -8,7 +8,7 @@ async function listContacts() {
     const contacts = await fs.promises.readFile(contactsPath);
     return JSON.parse(contacts);
   } catch (error) {
-    console.log(error);
+    process.exit(1);
   }
 }
 
@@ -19,7 +19,7 @@ async function getContactById(contactId) {
 
     return contactToFind ? contactToFind : null;
   } catch (error) {
-    console.log(error);
+    process.exit(1);
   }
 }
 
@@ -35,11 +35,12 @@ async function removeContact(contactId) {
       const stringifiedContacts = JSON.stringify(modifiedContacts);
 
       await fs.promises.writeFile(contactsPath, stringifiedContacts);
+      return await listContacts();
+    } else {
+      return new Error("Contact not found");
     }
-
-    return await listContacts();
   } catch (error) {
-    console.log(error);
+    process.exit(1);
   }
 }
 
@@ -48,17 +49,19 @@ async function addContact(name, email, phone) {
     const contacts = await listContacts();
     const id = contacts[contacts.length - 1].id + 1;
 
-    if (contacts.find((contact) => contact.email === email)) return contacts;
+    if (contacts.find((contact) => contact.email === email)) {
+      return new Error("Contact already exists");
+    } else {
+      const newContact = { id, name, email, phone };
+      const modifiedContacts = [...contacts, newContact];
+      const stringifiedContacts = JSON.stringify(modifiedContacts);
 
-    const newContact = { id, name, email, phone };
-    const modifiedContacts = [...contacts, newContact];
-    const stringifiedContacts = JSON.stringify(modifiedContacts);
+      await fs.promises.writeFile(contactsPath, stringifiedContacts);
 
-    await fs.promises.writeFile(contactsPath, stringifiedContacts);
-
-    return modifiedContacts;
+      return newContact;
+    }
   } catch (error) {
-    console.log(error);
+    process.exit(1);
   }
 }
 
